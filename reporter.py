@@ -57,10 +57,18 @@ class Reporter:
         else:
             return f"❌  {failed_count} failure(s) — significant issues detected."
 
-    def summary(self, output_path: str | None = None):
+    def summary(self, url: str | None = None, mode: str | None = None,
+                runs: int | None = None, output_path: str | None = None):
         total = len(self._results)
         passed_count = sum(1 for r in self._results if r["passed"])
         failed_count = total - passed_count
+
+        if url is not None:
+            self._url = url
+        if mode is not None:
+            self._mode = mode
+        if runs is not None:
+            self._total_runs = runs
 
         hurdle_runs, hurdle_fails, hurdle_reasons, hurdle_snippets = self._build_stats()
 
@@ -126,13 +134,13 @@ class Reporter:
                     hurdle_reasons: dict, hurdle_snippets: dict):
         lines = []
 
-        lines.append("Orangutan — AI Endpoint Stress Test Report")
-        lines.append("=" * 70)
-        lines.append(f"Timestamp : {self._started_at.strftime('%Y-%m-%d %H:%M:%S')}")
-        lines.append(f"URL       : {self._url}")
-        lines.append(f"Mode      : {self._mode}")
-        lines.append(f"Runs      : {self._total_runs}")
-        lines.append(f"Score     : {passed_count}/{total} passed")
+        lines.append("Orangutan Report")
+        lines.append("=" * 16)
+        lines.append(f"Date:  {self._started_at.strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append(f"URL:   {self._url}")
+        lines.append(f"Mode:  {self._mode}")
+        lines.append(f"Runs:  {self._total_runs}")
+        lines.append("-" * 16)
         lines.append("")
 
         lines.append("=" * 70)
@@ -195,8 +203,11 @@ class Reporter:
         lines.append("=" * 70)
         lines.append(self._verdict(failed_count, total))
         lines.append("")
+        lines.append("=" * 16)
 
-        with open(path, "w", encoding="utf-8") as f:
-            f.write("\n".join(lines))
-
-        print(f"  Report saved to {path}")
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("\n".join(lines))
+            print(f"  Report saved to {path}")
+        except OSError as exc:
+            print(f"  [warn] could not write report to {path!r}: {exc}")

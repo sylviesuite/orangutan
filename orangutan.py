@@ -136,7 +136,7 @@ def run(args: argparse.Namespace):
 
         print()
 
-    reporter.summary(output_path=args.output)
+    reporter.summary(url=args.url, mode=args.mode, runs=args.runs, output_path=args.output)
 
 
 def main():
